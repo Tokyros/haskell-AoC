@@ -14,33 +14,11 @@ readInputFile = readFile "./input.txt"
 readNums :: String -> [Int]
 readNums st = map read (lines st)
 
-toDec :: String -> Int
-toDec = foldl' (\acc x -> acc * 2 + digitToInt x) 0
-
-getGamma :: [String] -> String
-getGamma = intercalate "" . map choosingFunc . group . sort . transpose
-    where 
-        choosingFunc = \[zeros, ones] -> if length zeros > length ones then "0" else "1"
-
-getEpsilon :: [String] -> String
-getEpsilon = intercalate "" . map choosingFunc . group . sort . transpose
-    where choosingFunc = \[zeros, ones] -> if length zeros <= length ones then "0" else "1"
-
-findBestMatch :: ([String] -> String) -> [(String, String)] -> Int
-findBestMatch _ [(_, solo)] = toDec solo
-findBestMatch getBit inp = res
-    where
-        commonBit = head $ getBit (map fst inp)
-        optionsStartingWithCommonBit = filter (\(x:xs, i) -> x == commonBit) inp
-        newOpts = map (\(x:xs, original) -> (xs, original)) optionsStartingWithCommonBit
-        res = findBestMatch getBit newOpts
-
 part1 :: [String] -> Int
-part1 lns = toDec (getGamma lns) * toDec (getEpsilon lns)
+part1 lns = 0
 
 part2 :: [String] -> Int
-part2 lns = findBestMatch getGamma zippedLns * findBestMatch getEpsilon zippedLns
-    where zippedLns = zip lns lns
+part2 lns = 0
 
 main :: IO ()
 main = do
