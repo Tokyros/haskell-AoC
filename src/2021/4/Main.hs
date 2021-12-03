@@ -18,12 +18,12 @@ toDec :: String -> Int
 toDec = foldl' (\acc x -> acc * 2 + digitToInt x) 0
 
 getGamma :: [String] -> String
-getGamma = intercalate "" . map (choosingFunc . group . sort) . transpose
+getGamma = intercalate "" . map choosingFunc . group . sort . transpose
     where 
         choosingFunc = \[zeros, ones] -> if length zeros > length ones then "0" else "1"
 
 getEpsilon :: [String] -> String
-getEpsilon = intercalate "" . map (choosingFunc . group . sort) . transpose
+getEpsilon = intercalate "" . map choosingFunc . group . sort . transpose
     where choosingFunc = \[zeros, ones] -> if length zeros <= length ones then "0" else "1"
 
 findBestMatch :: ([String] -> String) -> [(String, String)] -> Int
