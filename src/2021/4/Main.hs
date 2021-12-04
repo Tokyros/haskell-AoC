@@ -1,13 +1,6 @@
 module Main where
-import Data.List
-import Data.List.Split
-import Text.Regex.Posix
-import Control.Applicative
-import Data.Char (digitToInt)
-
-import qualified Data.Map as M
-import qualified Data.Set as S
-import Debug.Trace (trace, traceShow)
+import Data.List ( foldl', transpose )
+import Data.List.Split ( splitOn )
 
 data Cell = Marked Int | Unmarked Int deriving Show
 type Point = (Int, Int)
@@ -52,17 +45,24 @@ readNums :: String -> [Int]
 readNums st = map read (lines st)
 
 part1 :: Int -> [Board] -> [Int] -> Int
-part1 lastPlay boards plays = 
-    case filter boardWon boards of 
+part1 lastPlay boards plays =
+    case filter boardWon boards of
         [winningBoard] -> sumUnmarked winningBoard * lastPlay
-        [] -> part1 (head plays) (map (markCell (head plays)) boards) (tail plays)
-        _ -> undefined
+        _ -> part1 currentPlay boardsAfterPlay remainingPlays
+    where
+        currentPlay = head plays
+        remainingPlays = tail plays
+        boardsAfterPlay = map (markCell currentPlay) boards
 
 part2 :: Int -> [Board] -> [Int] -> Int
-part2 lastPlay boards plays = 
-    case filter (not . boardWon) boards of 
+part2 lastPlay boards plays =
+    case filter (not . boardWon) boards of
         [notWinningBoard] -> part1 lastPlay [notWinningBoard] plays
-        bs -> part2 (head plays) (map (markCell (head plays)) boards) (tail plays)
+        _ -> part2 currentPlay boardsAfterPlay remainingPlays
+    where
+        currentPlay = head plays
+        remainingPlays = tail plays
+        boardsAfterPlay = map (markCell currentPlay) boards
 
 main :: IO ()
 main = do
@@ -74,6 +74,5 @@ main = do
     let numsSplit = splitOn "," (head numsInp)
     let nums = map read numsSplit :: [Int]
 
-    -- print $ part1 0 boards nums
+    print $ part1 0 boards nums
     print $ part2 0 boards nums
-    -- 3990 - too low
