@@ -1,8 +1,6 @@
 module Main where
 import Data.List
 import Data.List.Split ( splitOn )
-import Control.Monad (guard)
-import Debug.Trace ( traceShow )
 
 type Point = (Int, Int)
 type Edges = (Point, Point)
