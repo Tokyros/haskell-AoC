@@ -15,9 +15,6 @@ parseInp str = inp
 
 type Inp = [Int]
 
-fac :: (Integral a) => a -> a
-fac n = sum [1..n]
-
 part1 :: Inp -> Int
 part1 inp = res
     where 
@@ -39,5 +36,5 @@ main :: IO ()
 main = do
     inp <- readInputFile
 
-    -- print $ part1 inp
+    print $ part1 inp
     print $ part2 inp
