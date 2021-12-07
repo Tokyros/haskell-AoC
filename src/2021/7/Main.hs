@@ -15,22 +15,20 @@ parseInp str = inp
 
 type Inp = [Int]
 
-part1 :: Inp -> Int
-part1 inp = res
-    where
-        fuels = map (\p -> sum $ map (\i -> abs (i - p)) inp) inp
-        min = minimum fuels
-        res = min
-
 sumFirstN :: Int -> Int
 sumFirstN n = floor (toRational $ (n * (n+1)) `div` 2)
 
+diff :: Int -> Int -> Int
+diff a b = abs (a - b)
+
+calculateLowestFuelConsumptions :: (Int -> Int -> Int) -> Inp -> Int
+calculateLowestFuelConsumptions cost inp = minimum $ map (\p -> sum $ map (cost p) inp) [minimum inp..maximum inp]
+
+part1 :: Inp -> Int
+part1 = calculateLowestFuelConsumptions diff
+
 part2 :: Inp -> Int
-part2 inp = res
-    where
-        range = [minimum inp..maximum inp]
-        fuels = map (\p -> sum $ map (\i -> sumFirstN $ abs (i-p)) inp) range
-        res = minimum fuels
+part2 = calculateLowestFuelConsumptions (\i p -> sumFirstN (diff i p))
 
 main :: IO ()
 main = do
