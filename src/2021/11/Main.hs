@@ -34,6 +34,9 @@ mapGridToPoint g = pointsGrid
         points = concatMap (\(rowIdx, row) -> map (\(colIdx, a) -> ((rowIdx, colIdx), a)) row) indexedRows
         pointsGrid = M.fromList points
 
+mapAny :: (a -> Bool) -> M.Map b a -> Bool
+mapAny pred m = (>0) $ M.size (M.filter pred m)
+
 parseInp :: String -> Inp
 parseInp str = inp
     where
@@ -66,9 +69,9 @@ increaseByOne :: Dumbo -> Dumbo
 increaseByOne (Charging i) = Charging (i+1)
 increaseByOne n = undefined
 
-maybeFlash :: Dumbo -> Dumbo
-maybeFlash (Charging i) = if i > 9 then JustFlashed else Charging i
-maybeFlash n = n
+maybeFlashDumbo :: Dumbo -> Dumbo
+maybeFlashDumbo (Charging i) = if i > 9 then JustFlashed else Charging i
+maybeFlashDumbo n = n
 
 increaseDumbo :: Int -> Dumbo -> Dumbo
 increaseDumbo by (Charging i) = Charging (i + by)
@@ -86,20 +89,16 @@ step :: Inp -> StepResult
 step dumbos = res
     where
         increasedDumbo = M.map increaseByOne dumbos
-        res = step' (increasedDumbo, 0)
+        res = flashLoop (increasedDumbo, 0)
 
-mapAny :: (a -> Bool) -> M.Map b a -> Bool
-mapAny pred m = (>0) $ M.size (M.filter pred m)
-
-step' :: StepResult -> StepResult
-step' (dumbos, flashedAcc)
-    | hasAnyJustFlashed = step' (next, flashedAcc + countFlashed)
-    | otherwise = (resetGrid maybeFlashedDumbos, flashedAcc)
+flashLoop :: StepResult -> StepResult
+flashLoop (dumbos, totalFlashed) = if mapAny justFlashed flashedDumbos
+                                    then flashLoop (chainReaction, totalFlashed + flashedThisRoundCount) 
+                                    else (resetGrid flashedDumbos, totalFlashed) 
     where
-        maybeFlashedDumbos = M.map maybeFlash dumbos
-        hasAnyJustFlashed = mapAny justFlashed maybeFlashedDumbos
-        next = M.mapWithKey (increaseDumbo . getNeighborsJustFlashedCount maybeFlashedDumbos) maybeFlashedDumbos
-        countFlashed = length $ M.filter justFlashed maybeFlashedDumbos
+        flashedDumbos = M.map maybeFlashDumbo dumbos
+        flashedThisRoundCount = length $ M.filter justFlashed flashedDumbos
+        chainReaction = M.mapWithKey (increaseDumbo . getNeighborsJustFlashedCount flashedDumbos) flashedDumbos
 
 part1 :: Inp -> Int
 part1 inp = res
