@@ -3,94 +3,79 @@ import Data.List
 import Data.List.Split ( splitOn )
 import qualified Data.Set as S
 import qualified Data.Map as M
-import MyUtils
 import Data.Char
 import Debug.Trace (traceShow)
-
+import Data.Maybe (fromMaybe)
 
 readInputFile :: IO Inp
 readInputFile = do
     contents <- readFile "./input.txt"
     return $ parseInp contents
 
-parseCave :: String -> Cave
-parseCave "start" = Start
-parseCave "end" = End
-parseCave x
+stringToCave :: String -> Cave
+stringToCave "start" = Start
+stringToCave "end" = End
+stringToCave x
     | all isLower x = Small x
-    | all isUpper x = Big x
-    | otherwise = undefined
+    | otherwise = Big x
 
-mapPairs :: [Cave] -> [Connection]
-mapPairs [c1@Start, c2] = [(c1, c2)]
-mapPairs [c1, c2@Start] = [(c2, c1)]
-mapPairs [c1, c2@End] = [(c1, c2)]
-mapPairs [c1, c2] = [(c1, c2), (c2, c1)]
-mapPairs _ = undefined
+toCaveTuple :: [String] -> (Cave, Cave)
+toCaveTuple [x, y] = (stringToCave x, stringToCave y)
+toCaveTuple _ = undefined
 
 parseInp :: String -> Inp
 parseInp str = inp
     where
         lns = lines str
-        pairs = map (map parseCave . splitOn "-") lns
-        connections = concatMap mapPairs pairs
-        inp = connections
+        tups = concatMap ((\(a, b) -> [(a, [b]), (b, [a])]) . toCaveTuple . splitOn "-") lns
+        caveSystem = M.fromListWith (++) tups
+        inp = caveSystem
 
-type Inp = [Connection]
+data Cave = Small String | Big String | Start | End deriving (Eq, Show, Ord)
+type CaveSystem = M.Map Cave [Cave]
 
-data Cave = Start | End | Small String | Big String deriving (Show, Eq)
-type Connection = (Cave, Cave)
-
-isStart :: Cave -> Bool
-isStart Start = True
-isStart _ = False
-
-getPossibleNextSteps :: [Connection] -> Cave -> [Connection]
-getPossibleNextSteps cons cave = filter (\(c1, c2) -> c1 == cave) cons
-
-blockReturn :: Cave -> [Connection] -> [Connection]
-blockReturn c@(Big x) con = con
-blockReturn c@(Small x) con = filter (\(from, to) -> to /= c) con
-blockReturn _ con = con
-
-walk :: Cave -> [Connection] -> Connection -> [Connection] -> Int
-walk allowed history (a, End) _ = traceShow history 1
-walk allowed history _ [] = 0
-walk allowed history path@(from, to) connections = res
-    where
-        connectionsWithoutCurrent = filter (/=path) connections
-        isFromAllowedTwice = from == allowed
-        withoutReturn = if not isFromAllowedTwice then blockReturn from connectionsWithoutCurrent else connectionsWithoutCurrent
-        newAllowed = if not isFromAllowedTwice then allowed else Small "----------"
-        nextSteps = getPossibleNextSteps withoutReturn (snd path)
-        allWalks = sum $ map (\p -> walk newAllowed (history ++ [p]) p withoutReturn) nextSteps
-        res = allWalks
-
-part1 :: Inp -> Int
-part1 inp = res
-    where
-        starts = filter (isStart . fst) inp
-        res = sum (map (\s -> walk (Small "-----------") [] s inp) starts)
+type Inp = CaveSystem
 
 isSmall :: Cave -> Bool
 isSmall (Small x) = True
 isSmall _ = False
 
+visitedSmallCaveTwice :: [Cave] -> Bool
+visitedSmallCaveTwice caves = res
+    where
+        smallCaves = filter isSmall caves
+        sortedSmallCaves = map length $ group $ sort smallCaves
+        res = any (>1) sortedSmallCaves
+
+walk :: ([Cave] -> (Cave -> Bool)) -> [Cave] -> Cave -> CaveSystem -> [[Cave]]
+walk _ history End _ = [history ++ [End]]
+walk filter history currentCave graph = res
+    where
+        options = fromMaybe [] (M.lookup currentCave graph)
+        newHistory = history ++ [currentCave]
+        modifiedGraph = case currentCave of Start -> M.delete Start graph
+                                            n -> M.filterWithKey (\k v -> filter newHistory k) graph
+        res = concatMap (\c -> walk filter newHistory c modifiedGraph) options
+
+part1Filter :: [Cave] -> (Cave -> Bool)
+part1Filter path c = not (isSmall c && c `elem` path)
+
+part1 :: Inp -> Int
+part1 inp = res
+    where
+        res = length $ walk part1Filter [] Start inp
+
+part2Filter :: [Cave] -> (Cave -> Bool)
+part2Filter path c = not (visitedSmallCaveTwice path) || not (isSmall c && c `elem` path)
+
 part2 :: Inp -> Int
 part2 inp = res
     where
-        allCaves = nub $ map snd inp ++ map fst inp
-        smallCaves = filter isSmall allCaves
-
-        starts = filter (isStart . fst) inp
-        
-        res = sum (map (\s -> sum $ map (\sc -> walk sc [] s inp) smallCaves) starts)
-
+        res = length $ walk part2Filter [] Start inp
 
 main :: IO ()
 main = do
     inp <- readInputFile
 
-    print inp
     print $ part1 inp
-    -- print $ part2 inp
+    print $ part2 inp
