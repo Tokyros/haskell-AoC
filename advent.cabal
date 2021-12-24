@@ -34,6 +34,7 @@ library
   build-depends:
       base >=4.7 && <5
     , containers
+    , heap >=1.0.4
     , mtl
     , regex-posix
     , split
@@ -50,6 +51,7 @@ executable advent-exe
       advent
     , base >=4.7 && <5
     , containers
+    , heap >=1.0.4
     , mtl
     , regex-posix
     , split
@@ -67,6 +69,7 @@ test-suite advent-test
       advent
     , base >=4.7 && <5
     , containers
+    , heap >=1.0.4
     , mtl
     , regex-posix
     , split

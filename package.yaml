@@ -25,6 +25,7 @@ dependencies:
 - regex-posix
 - split
 - mtl
+- heap >= 1.0.4
 
 library:
   source-dirs: src
