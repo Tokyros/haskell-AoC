@@ -23,6 +23,7 @@ dependencies:
 - base >= 4.7 && < 5
 - containers
 - regex-posix
+- parsec
 - split
 - mtl
 - heap >= 1.0.4
