@@ -114,7 +114,7 @@ part2 eitherStacks eitherCommands = do
 
 main :: IO ()
 main = do
-    contents <- readFile "./src/2022/2/input.txt"
+    contents <- readFile "./src/2022/5/input.txt"
 
     let commandsUnparsed = last $ splitOn "\n\n" contents
     let parsedCommands = Main.parse parseCommands () commandsUnparsed
