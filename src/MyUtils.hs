@@ -1,4 +1,4 @@
-module MyUtils (Grid, from2dList, windows, dijkstra) where
+module MyUtils (Grid, from2dList, windows, parseArray, parse) where
 
 import qualified Data.Map as M
 import Data.List.Split (splitOn)
@@ -7,10 +7,24 @@ import qualified Data.List
 import Data.List
 import Data.Maybe
 import qualified Data.Map.Strict as Map
+import qualified Text.Parsec as P
+import Debug.Trace (traceShow)
 
 type Node = Int
 type Weight = Int
 type Graph = Map.Map Node [(Node, Weight)]
+
+parseArray :: P.Parsec String () a -> P.Parsec String () [a]
+parseArray convertItem =
+    P.between (P.char '[') (P.char ']') (P.sepBy convertItem (P.char ','))
+
+parse :: P.Parsec String () a -> String -> a
+parse parser st = res
+    where
+        parsed = P.parse parser "Source" st
+        res = case parsed of
+            Right tups -> tups;
+            Left err -> traceShow err undefined;
 
 dijkstra :: Graph -> Node -> Node -> Maybe [Node]
 dijkstra graph source target = go (Map.singleton source 0) [source] []

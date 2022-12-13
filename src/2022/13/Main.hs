@@ -10,7 +10,7 @@ import qualified Text.Parsec.Char as C
 import Debug.Trace (traceShow)
 import Text.Printf (printf)
 import Data.Maybe (fromJust)
-import MyUtils (from2dList, Grid)
+import qualified MyUtils as U
 import Control.Monad.State (State, MonadState (put))
 import qualified Data.Set as S
 import Text.Parsec (parserTrace)
@@ -21,17 +21,13 @@ import Data.List.Split
 data Value = Value Int | Arr [Value] deriving (Show, Eq, Read)
 type Tup = (Value, Value)
 
-parseArray :: P.Parsec String () a -> P.Parsec String () [a]
-parseArray convertItem =
-    P.between (P.char '[') (P.char ']') (P.sepBy convertItem (P.char ','))
-
 parseInt :: P.Parsec String () Value
 parseInt = do
     Value . read <$> P.many1 P.digit
 
 parseArr :: P.Parsec String () Value
 parseArr = do
-    Arr <$> parseArray parseValue
+    Arr <$> U.parseArray parseValue
 
 parseValue :: P.Parsec String () Value
 parseValue =
@@ -48,14 +44,6 @@ parseTup = do
 parseTups :: P.Parsec String () [Tup]
 parseTups =
     P.sepBy parseTup (P.char '\n')
-
-parse :: String -> [Tup]
-parse st = res
-    where
-        parsed = P.parse parseTups "Source" st
-        res = case parsed of
-            Right tups -> tups;
-            Left err -> traceShow err [];
 
 compareValues :: Value -> Value -> Ordering
 compareValues (Value x) (Value y) = x `compare` y
@@ -97,7 +85,7 @@ main :: IO ()
 main = do
     contents <- readFile "./src/2022/13/input.txt"
 
-    let tups = parse contents
+    let tups = U.parse parseTups contents
 
     print $ part1 tups
     print $ part2 tups
