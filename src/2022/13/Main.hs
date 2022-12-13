@@ -21,19 +21,17 @@ import Data.List.Split
 data Value = Value Int | Arr [Value] deriving (Show, Eq, Read)
 type Tup = (Value, Value)
 
-parseGenericArray :: P.Parsec String () a -> P.Parsec String () [a]
-parseGenericArray convertItem =
+parseArray :: P.Parsec String () a -> P.Parsec String () [a]
+parseArray convertItem =
     P.between (P.char '[') (P.char ']') (P.sepBy convertItem (P.char ','))
 
 parseInt :: P.Parsec String () Value
 parseInt = do
-    num <- P.many1 P.digit
-    return (Value $ read num)
+    Value . read <$> P.many1 P.digit
 
 parseArr :: P.Parsec String () Value
 parseArr = do
-    innerValues <- parseGenericArray parseValue
-    return $ Arr innerValues
+    Arr <$> parseArray parseValue
 
 parseValue :: P.Parsec String () Value
 parseValue =
