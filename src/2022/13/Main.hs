@@ -74,6 +74,7 @@ fromArr xs = Arr (map Value xs)
 filterBySnd :: (a -> Bool) -> [(b, a)] -> [(b, a)]
 filterBySnd fn = filter (\(b, a) -> fn a)
 
+indexify :: [b] -> [(Int, b)]
 indexify = zip [1..]
 
 part1 :: [Tup] -> Int
