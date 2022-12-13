@@ -52,3 +52,6 @@ tests:
     - -with-rtsopts=-N
     dependencies:
     - advent
+    - HUnit
+    - tasty-hunit
+    - tasty
